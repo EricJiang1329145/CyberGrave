@@ -1,0 +1,32 @@
+# .gitignore
+
+# 输出目录
+output/
+
+# 资源文件（示例）
+src/assets/*.jpg
+src/assets/*.png
+src/assets/*.mp3
+src/assets/*.wav
+
+# 配置文件（包含个人信息）
+config.json
+
+# Node modules
+node_modules/
+
+# 日志文件
+*.log
+
+# Flask 临时文件
+temp_uploads/
+temp_output/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+ENV/
+.venv

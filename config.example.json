@@ -1,0 +1,52 @@
+{
+  "basic": {
+    "name": "张三",
+    "dates": "1990-2023",
+    "subtitle": "永远怀念我们的朋友",
+    "description": "张三是一个热爱生活、乐于助人的人。他总是面带微笑，用温暖感染着身边的每一个人。虽然他离开了我们，但他的精神和爱永远留在我们心中。"
+  },
+  "theme": {
+    "name": "dark",
+    "accentColor": "#4a9eff"
+  },
+  "music": {
+    "enabled": true,
+    "file": "assets/music.mp3",
+    "autoplay": false
+  },
+  "photos": [
+    "assets/photo1.jpg",
+    "assets/photo2.jpg",
+    "assets/photo3.jpg"
+  ],
+  "timeline": [
+    {
+      "year": "1990",
+      "event": "出生于北京"
+    },
+    {
+      "year": "2008",
+      "event": "考入清华大学"
+    },
+    {
+      "year": "2012",
+      "event": "获得学士学位"
+    },
+    {
+      "year": "2015",
+      "event": "开始创业"
+    },
+    {
+      "year": "2023",
+      "event": "永远离开"
+    }
+  ],
+  "messages": {
+    "enabled": true,
+    "title": "访客留言"
+  },
+  "candle": {
+    "enabled": true,
+    "title": "点亮烛光"
+  }
+}

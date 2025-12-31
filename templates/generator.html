@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>赛博墓碑生成器</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='generator.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>🌟 赛博墓碑生成器</h1>
+            <p class="subtitle">快速创建您的专属纪念页面</p>
+        </header>
+
+        <form id="generator-form" enctype="multipart/form-data" class="form">
+            <div class="section">
+                <h2>📝 基本信息</h2>
+                <div class="form-group">
+                    <label for="name">纪念对象名称 *</label>
+                    <input type="text" id="name" name="name" required placeholder="例如：张三">
+                </div>
+                <div class="form-group">
+                    <label for="dates">生卒年份 *</label>
+                    <input type="text" id="dates" name="dates" required placeholder="例如：1990-2023">
+                </div>
+                <div class="form-group">
+                    <label for="subtitle">副标题</label>
+                    <input type="text" id="subtitle" name="subtitle" placeholder="例如：永远怀念">
+                </div>
+                <div class="form-group">
+                    <label for="description">详细描述</label>
+                    <textarea id="description" name="description" rows="4" placeholder="写下纪念对象的简介或故事..."></textarea>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>🎨 主题设置</h2>
+                <div class="form-group">
+                    <label for="accentColor">主题颜色</label>
+                    <input type="color" id="accentColor" name="accentColor" value="#4a9eff">
+                    <span class="color-value">#4a9eff</span>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>🖼️ 照片上传</h2>
+                <div class="form-group">
+                    <label for="photos">选择照片（最多 10 张）</label>
+                    <input type="file" id="photos" name="photos" multiple accept="image/*">
+                    <p class="help-text">支持 JPG、PNG、GIF 格式，每张图片不超过 5MB</p>
+                </div>
+                <div id="photo-preview" class="photo-preview"></div>
+            </div>
+
+            <div class="section">
+                <h2>📅 时间线</h2>
+                <div id="timeline-container">
+                    <div class="timeline-item">
+                        <div class="form-group">
+                            <label>年份</label>
+                            <input type="text" name="timelineEvents[0][year]" placeholder="例如：1990">
+                        </div>
+                        <div class="form-group">
+                            <label>事件</label>
+                            <input type="text" name="timelineEvents[0][event]" placeholder="例如：出生">
+                        </div>
+                    </div>
+                </div>
+                <button type="button" id="add-timeline" class="btn-secondary">+ 添加时间线事件</button>
+            </div>
+
+            <div class="section">
+                <h2>🎵 音乐设置</h2>
+                <div class="form-group checkbox-group">
+                    <label>
+                        <input type="checkbox" id="musicEnabled" name="musicEnabled">
+                        启用背景音乐
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label for="music">选择音乐文件</label>
+                    <input type="file" id="music" name="music" accept="audio/*">
+                    <p class="help-text">支持 MP3、WAV 格式，文件不超过 10MB</p>
+                </div>
+                <div class="form-group checkbox-group">
+                    <label>
+                        <input type="checkbox" id="musicAutoplay" name="musicAutoplay">
+                        自动播放音乐
+                    </label>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>⚙️ 功能开关</h2>
+                <div class="form-group checkbox-group">
+                    <label>
+                        <input type="checkbox" id="candleEnabled" name="candleEnabled" checked>
+                        启用烛光功能
+                    </label>
+                </div>
+                <div class="form-group checkbox-group">
+                    <label>
+                        <input type="checkbox" id="messagesEnabled" name="messagesEnabled" checked>
+                        启用留言功能
+                    </label>
+                </div>
+            </div>
+
+            <div class="actions">
+                <button type="button" id="preview-btn" class="btn-preview">👁️ 预览</button>
+                <button type="submit" class="btn-generate">🚀 生成并下载</button>
+            </div>
+        </form>
+
+        <div id="loading" class="loading hidden">
+            <div class="spinner"></div>
+            <p>正在生成页面，请稍候...</p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('generator-form');
+            const photosInput = document.getElementById('photos');
+            const photoPreview = document.getElementById('photo-preview');
+            const timelineContainer = document.getElementById('timeline-container');
+            const addTimelineBtn = document.getElementById('add-timeline');
+            const accentColor = document.getElementById('accentColor');
+            const colorValue = document.querySelector('.color-value');
+            const previewBtn = document.getElementById('preview-btn');
+            const loading = document.getElementById('loading');
+
+            let timelineCount = 1;
+
+            accentColor.addEventListener('input', function() {
+                colorValue.textContent = this.value;
+            });
+
+            photosInput.addEventListener('change', function(e) {
+                photoPreview.innerHTML = '';
+                const files = Array.from(e.target.files).slice(0, 10);
+
+                files.forEach((file, index) => {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const div = document.createElement('div');
+                        div.className = 'photo-thumb';
+                        div.innerHTML = `
+                            <img src="${e.target.result}" alt="照片 ${index + 1}">
+                            <span class="photo-name">${file.name}</span>
+                        `;
+                        photoPreview.appendChild(div);
+                    };
+                    reader.readAsDataURL(file);
+                });
+
+                if (files.length > 10) {
+                    alert('最多只能上传 10 张照片，已自动截取前 10 张');
+                }
+            });
+
+            addTimelineBtn.addEventListener('click', function() {
+                const item = document.createElement('div');
+                item.className = 'timeline-item';
+                item.innerHTML = `
+                    <div class="form-group">
+                        <label>年份</label>
+                        <input type="text" name="timelineEvents[${timelineCount}][year]" placeholder="例如：2000">
+                    </div>
+                    <div class="form-group">
+                        <label>事件</label>
+                        <input type="text" name="timelineEvents[${timelineCount}][event]" placeholder="例如：重要事件">
+                    </div>
+                    <button type="button" class="btn-remove">删除</button>
+                `;
+                timelineContainer.appendChild(item);
+                timelineCount++;
+
+                item.querySelector('.btn-remove').addEventListener('click', function() {
+                    item.remove();
+                });
+            });
+
+            previewBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+
+                const formData = new FormData(form);
+
+                loading.classList.remove('hidden');
+
+                fetch('/preview', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (response.ok) {
+                        return response.text();
+                    }
+                    throw new Error('预览失败');
+                })
+                .then(html => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    const sessionId = doc.querySelector('[data-session-id]')?.dataset.sessionId;
+
+                    if (sessionId) {
+                        window.open(`/preview/${sessionId}`, '_blank');
+                    } else {
+                        alert('预览失败，请重试');
+                    }
+                    loading.classList.add('hidden');
+                })
+                .catch(error => {
+                    console.error('预览错误:', error);
+                    alert('预览失败: ' + error.message);
+                    loading.classList.add('hidden');
+                });
+            });
+
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                const name = document.getElementById('name').value.trim();
+                const dates = document.getElementById('dates').value.trim();
+
+                if (!name || !dates) {
+                    alert('请填写纪念对象名称和生卒年份');
+                    return;
+                }
+
+                loading.classList.remove('hidden');
+
+                const formData = new FormData(form);
+
+                fetch('/generate', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (response.ok) {
+                        return response.blob();
+                    }
+                    throw new Error('生成失败');
+                })
+                .then(blob => {
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'cyber_grave.zip';
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    loading.classList.add('hidden');
+                    alert('生成成功！文件已开始下载');
+                })
+                .catch(error => {
+                    console.error('生成错误:', error);
+                    alert('生成失败: ' + error.message);
+                    loading.classList.add('hidden');
+                });
+            });
+        });
+    </script>
+</body>
+</html>

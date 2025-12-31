@@ -1,0 +1,17 @@
+{
+  "name": "cyber-grave",
+  "version": "1.0.0",
+  "description": "赛博墓碑 - 快速搭建纪念网页的工具",
+  "main": "tools/generate.js",
+  "scripts": {
+    "generate": "node tools/generate.js",
+    "build": "node tools/generate.js"
+  },
+  "keywords": [
+    "memorial",
+    "cyber-grave",
+    "website-generator"
+  ],
+  "author": "",
+  "license": "MIT"
+}
