@@ -270,6 +270,131 @@ def preview_assets(session_id, filename):
     """预览资源文件"""
     return send_from_directory(os.path.join(app.config['OUTPUT_FOLDER'], session_id, 'assets'), filename)
 
+@app.route('/generate_server', methods=['POST'])
+def generate_server():
+    """生成服务器版本"""
+    try:
+        clean_temp_dirs()
+        ensure_dirs()
+
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        session_id = f"server_{timestamp}"
+        session_dir = os.path.join(app.config['UPLOAD_FOLDER'], session_id)
+        os.makedirs(session_dir, exist_ok=True)
+
+        data = request.form.to_dict()
+
+        photos = []
+        photo_files = request.files.getlist('photos')
+        for i, photo in enumerate(photo_files):
+            if photo and photo.filename:
+                filename = f"photo{i+1}.jpg"
+                photo_path = os.path.join(session_dir, 'assets', filename)
+                os.makedirs(os.path.dirname(photo_path), exist_ok=True)
+                photo.save(photo_path)
+                photos.append(photo_path)
+
+        music_file = None
+        music = request.files.get('music')
+        if music and music.filename:
+            music_path = os.path.join(session_dir, 'assets', 'music.mp3')
+            os.makedirs(os.path.dirname(music_path), exist_ok=True)
+            music.save(music_path)
+            music_file = music_path
+
+        config = generate_config(data, photos, music_file)
+
+        template_path = os.path.join(BASE_DIR, 'server_templates', 'template.html')
+        html_content = generate_html_from_template(config, template_path)
+
+        output_dir = os.path.join(app.config['OUTPUT_FOLDER'], session_id)
+        os.makedirs(output_dir, exist_ok=True)
+
+        with open(os.path.join(output_dir, 'templates', 'index.html'), 'w', encoding='utf-8') as f:
+            f.write(html_content)
+
+        styles_path = os.path.join(BASE_DIR, 'server_templates', 'styles.css')
+        shutil.copy(styles_path, os.path.join(output_dir, 'static', 'styles.css'))
+
+        script_path = os.path.join(BASE_DIR, 'server_templates', 'script.js')
+        shutil.copy(script_path, os.path.join(output_dir, 'static', 'script.js'))
+
+        server_app_path = os.path.join(BASE_DIR, 'server_templates', 'server_app.py')
+        shutil.copy(server_app_path, os.path.join(output_dir, 'app.py'))
+
+        if os.path.exists(os.path.join(session_dir, 'assets')):
+            shutil.copytree(os.path.join(session_dir, 'assets'),
+                          os.path.join(output_dir, 'static', 'assets'),
+                          dirs_exist_ok=True)
+
+        requirements_content = '''Flask==3.0.0
+Werkzeug==3.0.1
+'''
+        with open(os.path.join(output_dir, 'requirements.txt'), 'w', encoding='utf-8') as f:
+            f.write(requirements_content)
+
+        readme_content = f'''# {config.get('basic', {}).get('name', '纪念页面')} - 服务器版本
+
+这是一个支持点蜡烛功能的纪念页面。
+
+## 安装和运行
+
+1. 安装依赖：
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+2. 运行服务器：
+   ```bash
+   python app.py
+   ```
+
+3. 在浏览器中访问：http://127.0.0.1:5000
+
+## 功能
+
+- 点蜡烛功能（支持自定义姓名和留言）
+- 照片展示
+- 人生时间轴
+- 背景音乐
+
+## 数据存储
+
+蜡烛数据存储在 `candles.db` SQLite数据库中。
+
+## 注意事项
+
+- 这是开发服务器，生产环境请使用专业的WSGI服务器（如Gunicorn）
+- 数据库文件会自动创建在项目根目录下
+'''
+        with open(os.path.join(output_dir, 'README.md'), 'w', encoding='utf-8') as f:
+            f.write(readme_content)
+
+        zip_path = os.path.join(app.config['OUTPUT_FOLDER'], f'cyber_grave_server_{timestamp}.zip')
+        with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+            for root, dirs, files in os.walk(output_dir):
+                for file in files:
+                    file_path = os.path.join(root, file)
+                    arcname = os.path.relpath(file_path, output_dir)
+                    zipf.write(file_path, arcname)
+
+        @after_this_request
+        def remove_file(response):
+            try:
+                if os.path.exists(zip_path):
+                    os.remove(zip_path)
+            except Exception as e:
+                print(f"清理文件失败: {e}")
+            return response
+
+        return send_file(zip_path, as_attachment=True,
+                        download_name=f'cyber_grave_server_{timestamp}.zip',
+                        mimetype='application/zip')
+
+    except Exception as e:
+        print(f"生成服务器版本失败: {e}")
+        return jsonify({'error': str(e)}), 500
+
 if __name__ == '__main__':
     ensure_dirs()
     app.run(debug=True, port=5000)

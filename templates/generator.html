@@ -109,7 +109,8 @@
 
             <div class="actions">
                 <button type="button" id="preview-btn" class="btn-preview">👁️ 预览</button>
-                <button type="submit" class="btn-generate">🚀 生成并下载</button>
+                <button type="submit" class="btn-generate">📦 生成静态版本</button>
+                <button type="button" id="generate-server-btn" class="btn-server">🖥️ 生成服务器版本</button>
             </div>
         </form>
 
@@ -258,6 +259,48 @@
                 .catch(error => {
                     console.error('生成错误:', error);
                     alert('生成失败: ' + error.message);
+                    loading.classList.add('hidden');
+                });
+            });
+
+            document.getElementById('generate-server-btn').addEventListener('click', function() {
+                const name = document.getElementById('name').value.trim();
+                const dates = document.getElementById('dates').value.trim();
+
+                if (!name || !dates) {
+                    alert('请填写纪念对象名称和生卒年份');
+                    return;
+                }
+
+                loading.classList.remove('hidden');
+
+                const formData = new FormData(form);
+
+                fetch('/generate_server', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (response.ok) {
+                        return response.blob();
+                    }
+                    throw new Error('生成服务器版本失败');
+                })
+                .then(blob => {
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'cyber_grave_server.zip';
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    loading.classList.add('hidden');
+                    alert('服务器版本生成成功！文件已开始下载');
+                })
+                .catch(error => {
+                    console.error('生成服务器版本错误:', error);
+                    alert('生成服务器版本失败: ' + error.message);
                     loading.classList.add('hidden');
                 });
             });

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{name}} - 纪念页面</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1 class="name">{{name}}</h1>
+            <p class="dates">{{dates}}</p>
+            <p class="subtitle">{{subtitle}}</p>
+        </header>
+
+        <main class="main-content">
+            <section class="description">
+                <p>{{description}}</p>
+            </section>
+
+            <section class="photos">
+                <h2 class="section-title">照片回忆</h2>
+                <div class="photo-gallery">
+                    {{photos}}
+                </div>
+            </section>
+
+            <section class="timeline">
+                <h2 class="section-title">人生轨迹</h2>
+                <div class="timeline-list">
+                    {{timeline}}
+                </div>
+            </section>
+
+            <section class="candle-section" id="candle-section">
+                <h2 class="section-title">{{candleTitle}}</h2>
+                <div class="candle-container">
+                    <div class="candle" id="candle">
+                        <div class="flame"></div>
+                        <div class="wick"></div>
+                    </div>
+                    <button class="candle-btn" id="candle-btn">点亮烛光</button>
+                </div>
+                <p class="candle-count">已点亮 <span id="candle-count">0</span> 次烛光</p>
+                <div class="candle-list" id="candle-list"></div>
+            </section>
+        </main>
+
+        <footer class="footer">
+            <p>赛博墓碑 - 永恒的纪念</p>
+        </footer>
+    </div>
+
+    <audio id="bg-music" loop>
+        <source src="{{musicFile}}" type="audio/mpeg">
+    </audio>
+
+    <button class="music-toggle" id="music-toggle">🎵</button>
+
+    <script src="script.js"></script>
+</body>
+</html>

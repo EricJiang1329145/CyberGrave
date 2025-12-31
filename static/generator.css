@@ -4,6 +4,8 @@
     box-sizing: border-box;
 }
 
+
+
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -256,7 +258,8 @@ body {
 }
 
 .btn-preview,
-.btn-generate {
+.btn-generate,
+.btn-server {
     padding: 15px 40px;
     font-size: 1.1rem;
     border: none;
@@ -285,6 +288,16 @@ body {
 .btn-generate:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.btn-server {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+}
+
+.btn-server:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(245, 87, 108, 0.4);
 }
 
 .loading {
